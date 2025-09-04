@@ -1,13 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function RegisterForm() {
+function LoginForm() {
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    role: 'COMMERCE',
   });
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
@@ -24,13 +21,13 @@ function RegisterForm() {
     e.preventDefault();
     setMessage('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setMessage('Las contraseñas no coinciden.');
+    if (!formData.email || !formData.password) {
+      setMessage('Por favor, ingresa tu email y contraseña.');
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:4000/api/register', {
+      const response = await fetch('http://localhost:4000/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,9 +38,9 @@ function RegisterForm() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage('¡Registro exitoso!');
+        setMessage('¡Inicio de sesión exitoso!');
         setTimeout(() => {
-          navigate('/login');
+          navigate('/dashboard');
         }, 1500);
       } else {
         setMessage(`Error: ${data.error}`);
@@ -56,20 +53,8 @@ function RegisterForm() {
 
   return (
     <div style={{ maxWidth: '400px', margin: 'auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', fontFamily: 'sans-serif' }}>
-      <h2 style={{ textAlign: 'center' }}>Registro de Perfil</h2>
+      <h2 style={{ textAlign: 'center' }}>Inicio de Sesión</h2>
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '10px' }}>
-          <label htmlFor="name">Nombre y Apellido:</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
         <div style={{ marginBottom: '10px' }}>
           <label htmlFor="email">Email:</label>
           <input
@@ -94,34 +79,8 @@ function RegisterForm() {
             style={{ width: '100%', padding: '8px' }}
           />
         </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label htmlFor="confirmPassword">Confirmar Contraseña:</label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label htmlFor="role">Tipo de Perfil:</label>
-          <select
-            id="role"
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            style={{ width: '100%', padding: '8px' }}
-          >
-            <option value="COMMERCE">Comerciante</option>
-            <option value="PROFESSIONAL">Profesional</option>
-            <option value="NEIGHBOR">Vecino</option>
-          </select>
-        </div>
         <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '4px' }}>
-          Registrarse
+          Iniciar Sesión
         </button>
       </form>
       {message && <p style={{ marginTop: '10px', color: message.includes('Error') ? 'red' : 'green', textAlign: 'center' }}>{message}</p>}
@@ -129,4 +88,4 @@ function RegisterForm() {
   );
 }
 
-export default RegisterForm;
+export default LoginForm;

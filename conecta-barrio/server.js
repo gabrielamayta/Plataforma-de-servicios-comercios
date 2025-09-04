@@ -9,16 +9,20 @@ const prisma = new PrismaClient();
 app.use(express.json());
 app.use(cors());
 
+// Ruta de prueba para verificar que el servidor está funcionando
+app.get('/', (req, res) => {
+  res.send('El servidor está funcionando!');
+});
+
+// Ruta para el registro de nuevos usuarios
 app.post('/api/register', async (req, res) => {
   const { name, email, password, role } = req.body;
 
-  // Validación básica de campos
   if (!name || !email || !password || !role) {
     return res.status(400).json({ error: 'Faltan campos obligatorios.' });
   }
 
   try {
-    // Criterio de aceptación: validar si el email ya existe
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -27,11 +31,9 @@ app.post('/api/register', async (req, res) => {
       return res.status(409).json({ error: 'El email ya está registrado.' });
     }
 
-    // Encriptar la contraseña para mayor seguridad
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Crear el nuevo usuario en la base de datos
     const newUser = await prisma.user.create({
       data: {
         name,
@@ -41,8 +43,33 @@ app.post('/api/register', async (req, res) => {
       },
     });
 
-    // Respuesta de éxito
     res.status(201).json({ message: 'Registro exitoso.', user: newUser });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Ocurrió un error en el servidor.' });
+  }
+});
+
+// Ruta para el inicio de sesión de usuarios
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Email o contraseña incorrectos.' });
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Email o contraseña incorrectos.' });
+    }
+
+    res.status(200).json({ message: 'Inicio de sesión exitoso.', user: { id: user.id, email: user.email, role: user.role } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Ocurrió un error en el servidor.' });
