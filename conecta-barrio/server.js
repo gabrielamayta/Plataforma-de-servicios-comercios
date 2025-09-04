@@ -76,6 +76,34 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// Ruta para manejar la solicitud de "Olvidaste tu contraseña"
+app.post('/api/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Falta el campo de email.' });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      // Devolver un mensaje genérico para no dar pistas a atacantes
+      return res.status(200).json({ message: 'Si el email está registrado, recibirás un correo electrónico con instrucciones para restablecer tu contraseña.' });
+    }
+
+    // Aquí, en una aplicación real, se generaría un token único y se enviaría un email.
+    console.log(`Simulando envío de email para restablecer la contraseña a: ${email}`);
+    
+    res.status(200).json({ message: 'Si el email está registrado, recibirás un correo electrónico con instrucciones para restablecer tu contraseña.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Ocurrió un error en el servidor.' });
+  }
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);
